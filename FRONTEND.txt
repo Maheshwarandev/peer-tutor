@@ -1,0 +1,704 @@
+================================================================================
+PEER TUTOR MATCHMAKER FRONTEND — FULL IMPLEMENTATION DOCUMENT & CODEBASE
+================================================================================
+Date: 2026-07-27
+Tech Stack: React (Vite), Axios, Simple Custom CSS
+Layout Paradigm: Simple internal CRUD assessment tool (No auth, no Redux, no UI frameworks)
+
+================================================================================
+SECTION 1: SUMMARY OF FRONTEND IMPLEMENTATION & REFINEMENTS
+================================================================================
+
+1. LAYOUT & STRUCTURE:
+   - Clean, centered container layout constrained to a max-width of 900px.
+   - Header with main title "Peer Tutoring Matchmaker" and subtitle "Helping students connect with peer tutors".
+   - Student Section: Section heading "Student Section" above card "Create Help Request".
+   - Tutor Section: Section heading "Tutor Section", subtitle note "Available Help Requests — Enter your name to accept and help a student.", and card header "Available Help Requests".
+
+2. API INTEGRATION (Axios):
+   - Centralized Axios client configured in src/services/api.js pointing to baseURL "http://localhost:5000/api".
+   - POST /api/requests: Submits new help requests with student_name, subject, topic. Clears inputs and triggers auto-refresh.
+   - GET /api/requests/open: Dynamic fetching inside Home.jsx via useEffect. Renders open items or "No Open Help Requests".
+   - PATCH /api/requests/:id/match: Matches tutor with tutor_name payload, clears input, displays success banner "Tutor assigned successfully.", and auto-refreshes open list.
+
+3. UI & STYLING AESTHETICS (styles.css):
+   - Restricted color palette: White (#ffffff), Light Gray (#f9fafb), Dark Gray (#111827), Blue (#2563eb), Green (#16a34a), Red (#dc2626).
+   - Rectangular inputs and buttons with subtle border-radius (4px - 6px) and thin borders (1px solid #d1d5db).
+   - Input placeholder set to "Your Name" and action button set to "Accept Request".
+   - Green pill status badge ("Open") rendered inside each request card header.
+   - Clean feedback banners (.alert-success and .alert-error) and loading state text ("Loading help requests...").
+
+
+================================================================================
+SECTION 2: COMPLETE FRONTEND SOURCE CODE
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE 1: src/services/api.js
+--------------------------------------------------------------------------------
+import axios from "axios";
+
+// Reusable Axios instance configured with backend API base URL
+const API = axios.create({
+  baseURL: "http://localhost:5000/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Fetch all open help requests (GET /api/requests/open)
+export const fetchOpenRequests = async () => {
+  const response = await API.get("/requests/open");
+  return response.data;
+};
+
+// Create a new help request (POST /api/requests)
+export const createHelpRequest = async (requestData) => {
+  const response = await API.post("/requests", requestData);
+  return response.data;
+};
+
+// Match a tutor to a request (PATCH /api/requests/:id/match)
+export const matchTutorRequest = async (id, tutorName) => {
+  const response = await API.patch(`/requests/${id}/match`, {
+    tutor_name: tutorName,
+  });
+  return response.data;
+};
+
+export default API;
+
+
+--------------------------------------------------------------------------------
+FILE 2: src/styles/styles.css
+--------------------------------------------------------------------------------
+/* Clean, simple CSS for an internal CRUD tool */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+  line-height: 1.5;
+}
+
+/* Centered container with maximum width of 900px */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header & Navbar */
+.navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 0;
+}
+
+.navbar .container {
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navbar h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.navbar-subtitle {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+/* Section Headings */
+.section-header {
+  margin-bottom: 12px;
+}
+
+.section-header h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.section-subtitle {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-top: 2px;
+}
+
+/* Card Styling - Simple white card, thin border, light shadow */
+.card {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+/* Form Groups & Simple Rectangular Inputs */
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  color: #111827;
+  background-color: #ffffff;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+/* Simple Small Blue Button */
+.btn-blue {
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-blue:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-blue:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Alert Notification Banners (Green for Success, Red for Error) */
+.alert {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 14px;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.alert-success {
+  background-color: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #86efac;
+}
+
+/* Request Cards List */
+.requests-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.request-card {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.request-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.request-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Green Status Badge */
+.badge-open {
+  background-color: #dcfce7;
+  color: #16a34a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.request-card p {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+/* Match Tutor Inline Form */
+.match-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.match-container input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.match-container input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+/* Empty & Loading States */
+.empty-state,
+.loading-state {
+  text-align: center;
+  padding: 24px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .container {
+    padding: 14px;
+  }
+
+  .match-container {
+    flex-direction: column;
+  }
+}
+
+
+--------------------------------------------------------------------------------
+FILE 3: src/components/Navbar.jsx
+--------------------------------------------------------------------------------
+import React from "react";
+
+// Navbar component displaying app title and subtitle
+const Navbar = () => {
+  return (
+    <nav className="navbar">
+      <div className="container">
+        <h1>Peer Tutoring Matchmaker</h1>
+        <p className="navbar-subtitle">Helping students connect with peer tutors</p>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
+
+
+--------------------------------------------------------------------------------
+FILE 4: src/components/RequestForm.jsx
+--------------------------------------------------------------------------------
+import React, { useState } from "react";
+import { createHelpRequest } from "../services/api";
+
+// Component for the Student Section form to create help requests
+const RequestForm = ({ onRequestCreated }) => {
+  // State for form fields
+  const [studentName, setStudentName] = useState("");
+  const [subject, setSubject] = useState("");
+  const [topic, setTopic] = useState("");
+
+  // State for feedback and loading
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Basic empty field validation
+    if (!studentName.trim() || !subject.trim() || !topic.trim()) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Call backend API POST /api/requests
+      await createHelpRequest({
+        student_name: studentName.trim(),
+        subject: subject.trim(),
+        topic: topic.trim(),
+      });
+
+      // Show success feedback
+      setSuccess("Help request created successfully.");
+
+      // Clear input fields
+      setStudentName("");
+      setSubject("");
+      setTopic("");
+
+      // Refresh list in parent component
+      if (onRequestCreated) {
+        onRequestCreated();
+      }
+    } catch (err) {
+      console.error("Error creating request:", err);
+      const msg = err.response?.data?.message || "Failed to create help request.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      {/* 1. Small heading above the form */}
+      <div className="section-header">
+        <h2>Student Section</h2>
+      </div>
+
+      <div className="card">
+        <h3>Create Help Request</h3>
+
+        {/* Error notification */}
+        {error && <div className="alert alert-error">{error}</div>}
+
+        {/* Success notification */}
+        {success && <div className="alert alert-success">{success}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="studentName">Student Name</label>
+            <input
+              id="studentName"
+              type="text"
+              placeholder="Enter student name"
+              value={studentName}
+              onChange={(e) => setStudentName(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="subject">Subject</label>
+            <input
+              id="subject"
+              type="text"
+              placeholder="Enter subject (e.g., Math)"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="topic">Topic</label>
+            <textarea
+              id="topic"
+              placeholder="Describe topic"
+              rows="3"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <button type="submit" className="btn-blue" disabled={loading}>
+            {loading ? "Submitting..." : "Submit"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default RequestForm;
+
+
+--------------------------------------------------------------------------------
+FILE 5: src/components/MatchTutor.jsx
+--------------------------------------------------------------------------------
+import React, { useState } from "react";
+import { matchTutorRequest } from "../services/api";
+
+// Component for assigning a tutor to a specific request
+const MatchTutor = ({ requestId, onMatched }) => {
+  const [tutorName, setTutorName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleMatch = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Validate empty name input
+    if (!tutorName.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Call API PATCH /api/requests/:id/match
+      await matchTutorRequest(requestId, tutorName.trim());
+
+      setSuccess("Tutor assigned successfully.");
+      setTutorName("");
+
+      // Refresh requests list
+      if (onMatched) {
+        onMatched();
+      }
+    } catch (err) {
+      console.error("Match tutor error:", err);
+      const msg = err.response?.data?.message || "Failed to assign tutor.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ width: "100%" }}>
+      {error && <div className="alert alert-error">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
+
+      <form onSubmit={handleMatch} className="match-container">
+        <input
+          type="text"
+          placeholder="Your Name"
+          value={tutorName}
+          onChange={(e) => setTutorName(e.target.value)}
+          disabled={loading}
+        />
+        <button type="submit" className="btn-blue" disabled={loading}>
+          {loading ? "Accepting..." : "Accept Request"}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default MatchTutor;
+
+
+--------------------------------------------------------------------------------
+FILE 6: src/components/RequestCard.jsx
+--------------------------------------------------------------------------------
+import React from "react";
+import MatchTutor from "./MatchTutor";
+
+// Component representing an individual request card
+const RequestCard = ({ request, onMatched }) => {
+  const { id, student_name, subject, topic, status } = request;
+
+  return (
+    <div className="request-card">
+      <div className="request-card-header">
+        <h4>{student_name}</h4>
+        {/* Status badge */}
+        <span className="badge-open">{status || "Open"}</span>
+      </div>
+
+      <p><strong>Subject:</strong> {subject}</p>
+      <p><strong>Topic:</strong> {topic}</p>
+
+      {/* Inline Tutor Match Form */}
+      <MatchTutor requestId={id} onMatched={onMatched} />
+    </div>
+  );
+};
+
+export default RequestCard;
+
+
+--------------------------------------------------------------------------------
+FILE 7: src/components/RequestList.jsx
+--------------------------------------------------------------------------------
+import React from "react";
+import RequestCard from "./RequestCard";
+
+// Component for the Tutor Section displaying available help requests
+const RequestList = ({ requests, loading, error, onRefresh }) => {
+  return (
+    <div>
+      {/* 2 & 3. Section heading and note */}
+      <div className="section-header">
+        <h2>Tutor Section</h2>
+        <div className="section-subtitle">
+          Available Help Requests — Enter your name to accept and help a student.
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>Available Help Requests</h3>
+
+        {/* Loading state */}
+        {loading && <div className="loading-state">Loading help requests...</div>}
+
+        {/* Error state */}
+        {!loading && error && <div className="alert alert-error">{error}</div>}
+
+        {/* Empty state */}
+        {!loading && !error && requests.length === 0 && (
+          <div className="empty-state">No Open Help Requests</div>
+        )}
+
+        {/* List of open request cards */}
+        {!loading && !error && requests.length > 0 && (
+          <div className="requests-grid">
+            {requests.map((request) => (
+              <RequestCard
+                key={request.id}
+                request={request}
+                onMatched={onRefresh}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default RequestList;
+
+
+--------------------------------------------------------------------------------
+FILE 8: src/pages/Home.jsx
+--------------------------------------------------------------------------------
+import React, { useState, useEffect } from "react";
+import Navbar from "../components/Navbar";
+import RequestForm from "../components/RequestForm";
+import RequestList from "../components/RequestList";
+import { fetchOpenRequests } from "../services/api";
+
+// Home Page Layout & API State Manager
+const Home = () => {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Function to fetch open requests from backend (GET /api/requests/open)
+  const loadOpenRequests = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const response = await fetchOpenRequests();
+      // Backend returns { count: N, data: [...] }
+      setRequests(response.data || []);
+    } catch (err) {
+      console.error("Failed to fetch open requests:", err);
+      setError("Unable to load open help requests. Please check if the backend server is running.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Task 2: Fetch open requests on initial component mount using useEffect
+  useEffect(() => {
+    loadOpenRequests();
+  }, []);
+
+  return (
+    <div>
+      <Navbar />
+      <main className="container">
+        {/* Help Request Creation Form */}
+        <RequestForm onRequestCreated={loadOpenRequests} />
+
+        {/* Open Requests List */}
+        <RequestList
+          requests={requests}
+          loading={loading}
+          error={error}
+          onRefresh={loadOpenRequests}
+        />
+      </main>
+    </div>
+  );
+};
+
+export default Home;
+
+
+--------------------------------------------------------------------------------
+FILE 9: src/App.jsx
+--------------------------------------------------------------------------------
+import React from "react";
+import Home from "./pages/Home";
+import "./styles/styles.css";
+
+// App root component rendering Home page
+function App() {
+  return <Home />;
+}
+
+export default App;
+
+
+--------------------------------------------------------------------------------
+FILE 10: src/main.jsx
+--------------------------------------------------------------------------------
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+================================================================================
+END OF FILE
+================================================================================

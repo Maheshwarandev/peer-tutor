@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+backend/.env
+
+# Build outputs
+frontend/dist/
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+*.log
