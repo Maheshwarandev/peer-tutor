@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { createHelpRequest } from "../services/api";
 
-// Component for the Student Section form to create help requests
+// Component for creating help requests in Student Dashboard
 const RequestForm = ({ onRequestCreated }) => {
   // State for form fields
   const [studentName, setStudentName] = useState("");
@@ -19,7 +20,7 @@ const RequestForm = ({ onRequestCreated }) => {
     setError("");
     setSuccess("");
 
-    // Basic empty field validation
+    // Validate empty fields
     if (!studentName.trim() || !subject.trim() || !topic.trim()) {
       setError("Please fill in all fields.");
       return;
@@ -43,7 +44,7 @@ const RequestForm = ({ onRequestCreated }) => {
       setSubject("");
       setTopic("");
 
-      // Refresh list in parent component
+      // Trigger refresh callback if provided
       if (onRequestCreated) {
         onRequestCreated();
       }
@@ -57,63 +58,63 @@ const RequestForm = ({ onRequestCreated }) => {
   };
 
   return (
-    <div>
-      {/* 1. Small heading above the form */}
-      <div className="section-header">
-        <h2>Student Section</h2>
-      </div>
+    <div className="card">
+      <h3>Create Help Request</h3>
 
-      <div className="card">
-        <h3>Create Help Request</h3>
+      {/* Error notification */}
+      {error && <div className="alert alert-error">{error}</div>}
 
-        {/* Error notification */}
-        {error && <div className="alert alert-error">{error}</div>}
+      {/* Success notification with Back to Home button */}
+      {success && (
+        <div className="alert alert-success alert-with-action">
+          <span>{success}</span>
+          <Link to="/" className="btn-success-action">
+            Back to Home
+          </Link>
+        </div>
+      )}
 
-        {/* Success notification */}
-        {success && <div className="alert alert-success">{success}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="studentName">Student Name</label>
+          <input
+            id="studentName"
+            type="text"
+            placeholder="Enter student name"
+            value={studentName}
+            onChange={(e) => setStudentName(e.target.value)}
+            disabled={loading}
+          />
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="studentName">Student Name</label>
-            <input
-              id="studentName"
-              type="text"
-              placeholder="Enter student name"
-              value={studentName}
-              onChange={(e) => setStudentName(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+        <div className="form-group">
+          <label htmlFor="subject">Subject</label>
+          <input
+            id="subject"
+            type="text"
+            placeholder="Enter subject (e.g., Math)"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            disabled={loading}
+          />
+        </div>
 
-          <div className="form-group">
-            <label htmlFor="subject">Subject</label>
-            <input
-              id="subject"
-              type="text"
-              placeholder="Enter subject (e.g., Math)"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+        <div className="form-group">
+          <label htmlFor="topic">Topic</label>
+          <textarea
+            id="topic"
+            placeholder="Describe topic"
+            rows="3"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            disabled={loading}
+          />
+        </div>
 
-          <div className="form-group">
-            <label htmlFor="topic">Topic</label>
-            <textarea
-              id="topic"
-              placeholder="Describe topic"
-              rows="3"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          <button type="submit" className="btn-blue" disabled={loading}>
-            {loading ? "Submitting..." : "Submit"}
-          </button>
-        </form>
-      </div>
+        <button type="submit" className="btn-blue" disabled={loading}>
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+      </form>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-/* Clean, simple CSS for an internal CRUD tool */
+/* Clean, spacious CSS for internal Peer Tutoring Matchmaker tool */
 
 * {
   margin: 0;
@@ -13,76 +13,188 @@ body {
   line-height: 1.5;
 }
 
-/* Centered container with maximum width of 900px */
+/* Centered main container with max width 900px */
 .container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
 }
 
-/* Header & Navbar */
+/* Navbar / Header */
 .navbar {
   background-color: #ffffff;
   border-bottom: 1px solid #e5e7eb;
   padding: 16px 0;
 }
 
-.navbar .container {
-  padding-top: 0;
-  padding-bottom: 0;
+.navbar-content {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-logo-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-logo-link:hover h1 {
+  color: #2563eb;
 }
 
 .navbar h1 {
   font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
+  transition: color 0.15s ease;
 }
 
 .navbar-subtitle {
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-
-/* Section Headings */
-.section-header {
-  margin-bottom: 12px;
-}
-
-.section-header h2 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.section-subtitle {
   font-size: 0.875rem;
   color: #4b5563;
   margin-top: 2px;
 }
 
-/* Card Styling - Simple white card, thin border, light shadow */
+.navbar-back-btn {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.navbar-back-btn:hover {
+  background-color: #eff6ff;
+  border-color: #93c5fd;
+}
+
+/* Landing Page Styles */
+.landing-hero {
+  text-align: center;
+  margin: 20px 0 36px 0;
+}
+
+.landing-hero h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.landing-subtitle {
+  font-size: 1.1rem;
+  color: #4b5563;
+}
+
+.action-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.action-card {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.action-card-icon {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+}
+
+.action-card h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.action-card p {
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin-bottom: 24px;
+  line-height: 1.45;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dashboard-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.dashboard-description {
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+.back-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.back-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Card General Styling */
 .card {
   background-color: #ffffff;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  padding: 20px;
+  padding: 24px;
   margin-bottom: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .card h3 {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-/* Form Groups & Simple Rectangular Inputs */
+/* Form Styling & Rectangular Inputs */
 .form-group {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
@@ -90,14 +202,14 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
   color: #374151;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 8px 12px;
-  font-size: 0.9rem;
+  padding: 9px 12px;
+  font-size: 0.925rem;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   color: #111827;
@@ -108,18 +220,20 @@ body {
 .form-group textarea:focus {
   outline: none;
   border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
-/* Simple Small Blue Button */
+/* Simple Blue Button */
 .btn-blue {
   background-color: #2563eb;
   color: #ffffff;
   border: none;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .btn-blue:hover {
@@ -131,12 +245,12 @@ body {
   cursor: not-allowed;
 }
 
-/* Alert Notification Banners (Green for Success, Red for Error) */
+/* Alert Notification Banners */
 .alert {
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 4px;
   font-size: 0.875rem;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .alert-error {
@@ -151,29 +265,52 @@ body {
   border: 1px solid #86efac;
 }
 
+.alert-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-success-action {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #16a34a;
+  text-decoration: none;
+  background-color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #86efac;
+  transition: all 0.15s ease;
+}
+
+.btn-success-action:hover {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+
 /* Request Cards List */
 .requests-grid {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .request-card {
   background-color: #ffffff;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  padding: 16px;
+  padding: 18px;
 }
 
 .request-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .request-card h4 {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #111827;
 }
@@ -189,7 +326,7 @@ body {
 }
 
 .request-card p {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: #4b5563;
   margin-bottom: 6px;
 }
@@ -197,15 +334,15 @@ body {
 /* Match Tutor Inline Form */
 .match-container {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid #e5e7eb;
 }
 
 .match-container input {
   flex: 1;
-  padding: 6px 10px;
+  padding: 7px 11px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 0.875rem;
@@ -220,7 +357,7 @@ body {
 .empty-state,
 .loading-state {
   text-align: center;
-  padding: 24px;
+  padding: 28px;
   color: #6b7280;
   font-size: 0.9rem;
   background-color: #ffffff;
@@ -229,9 +366,13 @@ body {
 }
 
 /* Responsive adjustments */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .container {
-    padding: 14px;
+    padding: 16px 12px;
+  }
+
+  .action-cards-grid {
+    grid-template-columns: 1fr;
   }
 
   .match-container {

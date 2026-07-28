@@ -1,21 +1,42 @@
 # Peer Tutoring Matchmaker
 
-A full-stack web application designed to connect students needing academic assistance with peer tutors. Built using **Node.js**, **Express.js**, **PostgreSQL**, **React (Vite)**, and **Axios**.
+A full-stack web application designed to connect students needing academic assistance with peer tutors. Built using **Node.js**, **Express.js**, **PostgreSQL**, **React (Vite)**, **React Router**, and **Axios**.
 
 ---
 
-## 📌 Project Overview
+## 📌 Project Overview & Application Workflow
 
-The **Peer Tutoring Matchmaker** application facilitates peer-to-peer academic support:
-1. **Student Section**: Students submit a help request specifying their name, the subject, and the specific topic they need help with.
-2. **Tutor Section**: Peer tutors view all currently open help requests, enter their name, and accept requests to tutor students.
-3. **Automated Matching & Lifecycle**: Once a tutor accepts a request, its status updates from `Open` to `Matched` in PostgreSQL, automatically removing it from the available requests list.
+The **Peer Tutoring Matchmaker** application facilitates peer-to-peer academic support through a multi-page workflow driven by React Router:
+
+### **Application Architecture Flow**
+```text
+Landing Page ( / )
+  ├── 📚 "I Need Help"
+  │     ↓
+  │   Student Dashboard ( /student )
+  │     ↓
+  │   POST /api/requests  (Submits new help request)
+  │
+  └── 👨‍🏫 "I Want to Help"
+        ↓
+      Tutor Dashboard ( /tutor )
+        ↓
+      GET /api/requests/open  (Fetches available open requests)
+        ↓
+      PATCH /api/requests/:id/match  (Accepts request & assigns tutor)
+```
+
+1. **Landing Page (`/`)**: Displays a clean, professional welcome screen with two primary action cards:
+   * **📚 I Need Help**: Directs students to the Student Dashboard.
+   * **👨‍🏫 I Want to Help**: Directs tutors to the Tutor Dashboard.
+2. **Student Dashboard (`/student`)**: Students submit a help request specifying their name, subject, and topic. Displays success feedback and offers a "Back to Home" option.
+3. **Tutor Dashboard (`/tutor`)**: Peer tutors view all open help requests (`WHERE status = 'Open'`), enter their name, and click "Accept Request". The request status updates to `Matched` in PostgreSQL and automatically refreshes off the open list.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### **Backend**
+### **Backend (Unchanged)**
 * **Runtime & Framework**: Node.js & Express.js (v5)
 * **Database**: PostgreSQL (connected using `pg` Pool driver)
 * **Configuration**: `dotenv` for environment variables, `cors` for Cross-Origin Resource Sharing
@@ -23,8 +44,9 @@ The **Peer Tutoring Matchmaker** application facilitates peer-to-peer academic s
 
 ### **Frontend**
 * **Framework**: React 19 (built with Vite)
+* **Routing**: React Router (`react-router-dom` v7)
 * **HTTP Client**: Axios
-* **Styling**: Clean custom CSS (no heavy UI frameworks, responsive 900px centered CRUD layout)
+* **Styling**: Clean custom CSS (spacious 900px centered CRUD assessment layout, rectangular inputs/buttons, no UI frameworks)
 
 ---
 
@@ -48,22 +70,25 @@ peer_tutor/
 │   ├── public/               # Static public assets
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.jsx    # Navigation header & subtitle
+│   │   │   ├── Navbar.jsx    # Navigation header with "Home" link
 │   │   │   ├── RequestForm.jsx # Help request submission form (Student Section)
 │   │   │   ├── RequestList.jsx # Available open requests list (Tutor Section)
-│   │   │   ├── RequestCard.jsx # Individual request card displaying subject/topic
+│   │   │   ├── RequestCard.jsx # Request card displaying subject/topic & badge
 │   │   │   └── MatchTutor.jsx  # Tutor name input & "Accept Request" action button
 │   │   ├── pages/
-│   │   │   └── Home.jsx      # Main application page layout
+│   │   │   ├── LandingPage.jsx     # Landing page (Route: /)
+│   │   │   ├── StudentDashboard.jsx# Student Dashboard (Route: /student)
+│   │   │   └── TutorDashboard.jsx  # Tutor Dashboard (Route: /tutor)
 │   │   ├── services/
 │   │   │   └── api.js        # Centralized Axios API instance (http://localhost:5000/api)
 │   │   ├── styles/
 │   │   │   └── styles.css    # Custom responsive CSS stylesheet
-│   │   ├── App.jsx           # Root React application component
+│   │   ├── App.jsx           # Application root configuring React Router
 │   │   └── main.jsx          # React DOM mounting entrypoint
 │   ├── package.json          # Frontend dependencies & scripts
 │   └── vite.config.js        # Vite build configuration
 │
+├── FRONTEND.txt              # Frontend documentation & complete source code
 └── README.md                 # Complete project documentation
 ```
 
@@ -107,20 +132,11 @@ Base URL: `http://localhost:5000/api`
 | `GET` | `/api/requests/open` | Fetch requests with `status = 'Open'` | None | `200 OK` — `{ count: N, data: [...] }` |
 | `PATCH` | `/api/requests/:id/match` | Accept/match a tutor to a request | Params: `:id`<br>Body: `{ "tutor_name": "Bob" }` | `200 OK` — Updated request object |
 
-### **API Validation & Error Handling**
-* **400 Bad Request**: Returned if required fields (`student_name`, `subject`, `topic`, or `tutor_name`) are missing/empty, or if `:id` is non-numeric.
-* **404 Not Found**: Returned if the request ID does not exist.
-* **409 Conflict**: Returned if attempting to match an already matched request (`status = 'Matched'`).
-
 ---
 
 ## 🚀 Setup & Running Instructions
 
-### **1. Prerequisites**
-* [Node.js](https://nodejs.org/) (v18+ recommended)
-* [PostgreSQL](https://www.postgresql.org/) (v14+ recommended)
-
-### **2. Backend Setup**
+### **1. Backend Setup**
 1. Navigate to the `backend/` folder:
    ```bash
    cd backend
@@ -140,17 +156,13 @@ Base URL: `http://localhost:5000/api`
    ```
 4. Start the backend server:
    ```bash
-   # Development mode with Nodemon
    npm run dev
-
-   # Or production mode
-   npm start
    ```
-   * The server will start on **`http://localhost:5000`**.
+   * Server runs on **`http://localhost:5000`**.
 
 ---
 
-### **3. Frontend Setup**
+### **2. Frontend Setup**
 1. Open a new terminal and navigate to the `frontend/` folder:
    ```bash
    cd frontend
@@ -163,16 +175,10 @@ Base URL: `http://localhost:5000/api`
    ```bash
    npm run dev
    ```
-   * The application will open on **`http://localhost:5173`**.
+   * Application runs on **`http://localhost:5173`**.
 
 ---
 
 ## 🧪 QA Testing & Verification
 
 The backend has undergone a full QA test audit covering 20 test scenarios (positive tests, negative validation, malformed JSON, SQL injection safety, non-numeric route parameters, and state concurrency checks) with a **100% Pass Rate**.
-
----
-
-## 📄 License
-
-This project is licensed under the ISC License.
