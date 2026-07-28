@@ -4,105 +4,173 @@ A full-stack web application designed to connect students needing academic assis
 
 ---
 
-## 📌 Project Overview & Application Workflow
+## 📌 Project Overview
 
-The **Peer Tutoring Matchmaker** application facilitates peer-to-peer academic support through a multi-page workflow driven by React Router:
-
-### **Application Architecture Flow**
-```text
-Landing Page ( / )
-  ├── 📚 "I Need Help"
-  │     ↓
-  │   Student Dashboard ( /student )
-  │     ↓
-  │   POST /api/requests  (Submits new help request)
-  │
-  └── 👨‍🏫 "I Want to Help"
-        ↓
-      Tutor Dashboard ( /tutor )
-        ↓
-      GET /api/requests/open  (Fetches available open requests)
-        ↓
-      PATCH /api/requests/:id/match  (Accepts request & assigns tutor)
-```
-
-1. **Landing Page (`/`)**: Displays a clean, professional welcome screen with two primary action cards:
-   * **📚 I Need Help**: Directs students to the Student Dashboard.
-   * **👨‍🏫 I Want to Help**: Directs tutors to the Tutor Dashboard.
-2. **Student Dashboard (`/student`)**: Students submit a help request specifying their name, subject, and topic. Displays success feedback and offers a "Back to Home" option.
-3. **Tutor Dashboard (`/tutor`)**: Peer tutors view all open help requests (`WHERE status = 'Open'`), enter their name, and click "Accept Request". The request status updates to `Matched` in PostgreSQL and automatically refreshes off the open list.
+The **Peer Tutoring Matchmaker** application facilitates peer-to-peer academic support through a multi-page workflow driven by React Router. It allows students to request help for specific subjects and topics, while providing peer tutors with a dedicated dashboard to view, accept, and match open help requests.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### **Backend (Unchanged)**
+### **Backend**
 * **Runtime & Framework**: Node.js & Express.js (v5)
-* **Database**: PostgreSQL (connected using `pg` Pool driver)
-* **Configuration**: `dotenv` for environment variables, `cors` for Cross-Origin Resource Sharing
-* **Dev Tools**: `nodemon` for hot-reloading
+* **Database**: PostgreSQL (connected via `pg` Pool driver)
+* **Environment & Security**: `dotenv` for configuration, `cors` for Cross-Origin Resource Sharing
+* **Development Tools**: `nodemon` for live server reloading
 
 ### **Frontend**
-* **Framework**: React 19 (built with Vite)
+* **Library & Build Tool**: React 19 & Vite
 * **Routing**: React Router (`react-router-dom` v7)
 * **HTTP Client**: Axios
-* **Styling**: Clean custom CSS (spacious 900px centered CRUD assessment layout, rectangular inputs/buttons, no UI frameworks)
+* **Styling**: Clean custom CSS (900px centered CRUD assessment layout, rectangular inputs, custom buttons, no heavy frameworks)
 
 ---
 
-## 📁 Repository Structure
+## ✨ Features
+
+* **Landing Page (`/`)**: Features two primary action cards:
+  * 📚 **I Need Help**: Navigates to the Student Dashboard.
+  * 👨‍🏫 **I Want to Help**: Navigates to the Tutor Dashboard.
+* **Student Dashboard (`/student`)**:
+  * Form submission with fields for **Student Name**, **Subject**, and **Topic**.
+  * **Duplicate Subject Protection**: Checks if an open request for the same subject already exists and rejects duplicates with a clear `409 Conflict` error.
+  * Interactive success notification with a direct link back to Home.
+* **Tutor Dashboard (`/tutor`)**:
+  * Displays open help requests (`WHERE status = 'Open'`).
+  * Inline tutor name input with an **Accept Request** action button.
+  * **Automated Removal**: Once accepted, status updates to `Matched` and the item automatically clears off the open list.
+* **Robust Error Handling**: Handles missing fields, invalid non-numeric IDs (`400`), non-existent records (`404`), and already-matched requests (`409`).
+
+---
+
+## 🏗️ Architecture Diagram
+
+### **System Architecture Flow**
+
+```mermaid
+graph TD
+    A[User Opens Application] --> B[Landing Page /]
+    
+    B -->|Click 'I Need Help'| C[Student Dashboard /student]
+    C --> D[Fill Help Request Form]
+    D --> E{Open request for same subject?}
+    E -->|Yes| F[Reject Request - 409 Conflict]
+    E -->|No| G[POST /api/requests]
+    G --> H[Express.js Backend API]
+    H --> I[(PostgreSQL Database)]
+    
+    B -->|Click 'I Want to Help'| J[Tutor Dashboard /tutor]
+    J --> K[GET /api/requests/open]
+    K --> H
+    H --> L[Display Open Requests]
+    L --> M[Enter Tutor Name]
+    M --> N[PATCH /api/requests/:id/match]
+    N --> H
+    H --> O[Status Changed to Matched]
+    O --> P[Removed from Open Requests API View]
+```
+
+### **Component Connection Flow**
+
+```text
++-----------------------------------------------------------------------+
+|                           REACT FRONTEND                              |
+|                                                                       |
+|  Landing Page ( / ) ----> Student Dashboard ( /student )              |
+|        |                          |                                   |
+|        |                          v                                   |
+|        |                  RequestForm Component                       |
+|        |                          |                                   |
+|        v                          v (POST /api/requests)              |
+|  Tutor Dashboard ( /tutor ) -----> Axios API Client                   |
+|        |                               |                              |
+|        v                               v                              |
+|  RequestList Component -------------> CORS Middleware                 |
+|  (GET /api/requests/open)              |                              |
+|  (PATCH /api/requests/:id/match)       v                              |
++----------------------------------------|------------------------------+
+                                         | HTTP / JSON
+                                         v
++-----------------------------------------------------------------------+
+|                           EXPRESS BACKEND                             |
+|                                                                       |
+|                       server.js (Express Server)                      |
+|                                   |                                   |
+|                       routes/requestRoutes.js                         |
+|                                   |                                   |
+|                    controllers/requestController.js                   |
+|                                   |                                   |
+|                         config/db.js (pg Pool)                        |
+|                                   |                                   |
++-----------------------------------|-----------------------------------+
+                                    | SQL Queries
+                                    v
++-----------------------------------------------------------------------+
+|                          POSTGRESQL DATABASE                          |
+|                                                                       |
+|                      Database: peer_tutoring_db                       |
+|                        Table: help_requests                           |
+|                                                                       |
++-----------------------------------------------------------------------+
+```
+
+---
+
+## 📂 Folder Structure
 
 ```text
 peer_tutor/
 │
-├── backend/                  # Node.js + Express API Server
+├── backend/                  # Node.js + Express REST API
 │   ├── config/
-│   │   └── db.js             # PostgreSQL connection pool configuration
+│   │   └── db.js             # PostgreSQL connection pool setup
 │   ├── controllers/
-│   │   └── requestController.js # API request handling and SQL queries
+│   │   └── requestController.js # Request controller (create, getOpen, matchTutor)
 │   ├── routes/
-│   │   └── requestRoutes.js  # Express routes definition (/api/requests)
-│   ├── .env                  # Environment variables (DB credentials, Port)
-│   ├── package.json          # Backend dependencies & scripts
-│   └── server.js             # Express app entrypoint & server setup
+│   │   └── requestRoutes.js  # API route definitions
+│   ├── .env                  # Environment variables (DB credentials & Port)
+│   ├── package.json          # Backend dependencies & npm scripts
+│   └── server.js             # Express app entrypoint & server bootstrap
 │
-├── frontend/                 # React Single Page Application
-│   ├── public/               # Static public assets
+├── frontend/                 # React Single Page Application (Vite)
+│   ├── public/               # Static web assets
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.jsx    # Navigation header with "Home" link
-│   │   │   ├── RequestForm.jsx # Help request submission form (Student Section)
-│   │   │   ├── RequestList.jsx # Available open requests list (Tutor Section)
-│   │   │   ├── RequestCard.jsx # Request card displaying subject/topic & badge
-│   │   │   └── MatchTutor.jsx  # Tutor name input & "Accept Request" action button
+│   │   │   ├── Navbar.jsx    # Header with title & "Back to Home" navigation
+│   │   │   ├── RequestForm.jsx # Help request creation form
+│   │   │   ├── RequestList.jsx # Available open help requests list
+│   │   │   ├── RequestCard.jsx # Card component displaying request details & status
+│   │   │   └── MatchTutor.jsx  # Inline tutor input & "Accept Request" action
 │   │   ├── pages/
-│   │   │   ├── LandingPage.jsx     # Landing page (Route: /)
-│   │   │   ├── StudentDashboard.jsx# Student Dashboard (Route: /student)
-│   │   │   └── TutorDashboard.jsx  # Tutor Dashboard (Route: /tutor)
+│   │   │   ├── LandingPage.jsx      # Home landing page ( / )
+│   │   │   ├── StudentDashboard.jsx # Student portal ( /student )
+│   │   │   └── TutorDashboard.jsx   # Tutor portal ( /tutor )
 │   │   ├── services/
-│   │   │   └── api.js        # Centralized Axios API instance (http://localhost:5000/api)
+│   │   │   └── api.js        # Centralized Axios service instance
 │   │   ├── styles/
-│   │   │   └── styles.css    # Custom responsive CSS stylesheet
-│   │   ├── App.jsx           # Application root configuring React Router
+│   │   │   └── styles.css    # Custom CSS stylesheet
+│   │   ├── App.jsx           # React Router configuration
 │   │   └── main.jsx          # React DOM mounting entrypoint
-│   ├── package.json          # Frontend dependencies & scripts
-│   └── vite.config.js        # Vite build configuration
+│   ├── package.json          # Frontend dependencies & npm scripts
+│   └── vite.config.js        # Vite configuration
 │
-├── FRONTEND.txt              # Frontend documentation & complete source code
-└── README.md                 # Complete project documentation
+├── .gitignore                # Git exclusion rules
+├── User Request Management Flow-2026-07-28-131900.pdf # Architectural Flowchart Diagram
+├── FRONTEND.txt              # Frontend documentation & full source code
+└── README.md                 # Project documentation
 ```
 
 ---
 
 ## 🗄️ Database Setup (PostgreSQL)
 
-Before running the backend, create the database and table using PostgreSQL (`psql` or pgAdmin):
+Run the following SQL commands in your PostgreSQL CLI (`psql`) or pgAdmin to create the database and table:
 
 ```sql
 -- 1. Create Database
 CREATE DATABASE peer_tutoring_db;
 
--- Connect to the database
+-- Connect to database
 \c peer_tutoring_db;
 
 -- 2. Create help_requests Table
@@ -126,26 +194,35 @@ Base URL: `http://localhost:5000/api`
 
 | Method | Endpoint | Description | Request Body / Params | Expected Response |
 | :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/` | Health check | None | `200 OK` — Plain text status |
-| `POST` | `/api/requests` | Create a new help request | `{ "student_name": "Alice", "subject": "Math", "topic": "Calculus" }` | `201 Created` — Created request object |
+| `GET` | `/` | Server Health Check | None | `200 OK` — Plain text status |
+| `POST` | `/api/requests` | Create a new help request | Body: `{ "student_name": "Alice", "subject": "Math", "topic": "Calculus" }` | `201 Created` — Created request object<br>`409 Conflict` — If open request for subject exists |
 | `GET` | `/api/requests` | Fetch all requests | None | `200 OK` — `{ count: N, data: [...] }` |
 | `GET` | `/api/requests/open` | Fetch requests with `status = 'Open'` | None | `200 OK` — `{ count: N, data: [...] }` |
 | `PATCH` | `/api/requests/:id/match` | Accept/match a tutor to a request | Params: `:id`<br>Body: `{ "tutor_name": "Bob" }` | `200 OK` — Updated request object |
 
 ---
 
-## 🚀 Setup & Running Instructions
+## 🚀 Installation & Running Guide
 
-### **1. Backend Setup**
-1. Navigate to the `backend/` folder:
+### **1. General Installation**
+Clone the repository to your local machine:
+```bash
+git clone https://github.com/YOUR_USERNAME/peer_tutor.git
+cd peer_tutor
+```
+
+---
+
+### **2. Backend Setup**
+1. Navigate to the `backend/` directory:
    ```bash
    cd backend
    ```
-2. Install backend dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Configure environment variables in `backend/.env`:
+3. Configure your `.env` file in `backend/.env`:
    ```env
    PORT=5000
    DB_HOST=localhost
@@ -156,18 +233,22 @@ Base URL: `http://localhost:5000/api`
    ```
 4. Start the backend server:
    ```bash
+   # Development mode
    npm run dev
+
+   # Production mode
+   npm start
    ```
    * Server runs on **`http://localhost:5000`**.
 
 ---
 
-### **2. Frontend Setup**
-1. Open a new terminal and navigate to the `frontend/` folder:
+### **3. Frontend Setup**
+1. Open a new terminal and navigate to the `frontend/` directory:
    ```bash
    cd frontend
    ```
-2. Install frontend dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
@@ -176,9 +257,3 @@ Base URL: `http://localhost:5000/api`
    npm run dev
    ```
    * Application runs on **`http://localhost:5173`**.
-
----
-
-## 🧪 QA Testing & Verification
-
-The backend has undergone a full QA test audit covering 20 test scenarios (positive tests, negative validation, malformed JSON, SQL injection safety, non-numeric route parameters, and state concurrency checks) with a **100% Pass Rate**.

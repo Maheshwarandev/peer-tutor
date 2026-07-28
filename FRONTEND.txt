@@ -21,13 +21,13 @@ SECTION 1: SUMMARY OF FRONTEND IMPLEMENTATION & ROUTING ARCHITECTURE
      └── 👨‍🏫 "I Want to Help" -> Tutor Dashboard ( /tutor ) -> GET /api/requests/open & PATCH /api/requests/:id/match
 
 3. PAGE & COMPONENT SPECIFICATIONS:
-   - LandingPage.jsx: Welcome screen with main title "Peer Tutoring Matchmaker", subtitle "Helping students learn together through peer tutoring", and two large action cards ("I Need Help" and "I Want to Help") with Continue buttons.
+   - LandingPage.jsx: Clean welcome screen rendering single top Navbar and two large action cards ("I Need Help" and "I Want to Help") with Continue buttons.
    - StudentDashboard.jsx: Dedicated student portal containing header, description "Create a help request", and RequestForm component.
    - TutorDashboard.jsx: Dedicated tutor portal containing header, description "Browse available help requests and accept one by entering your name", and RequestList component.
    - RequestForm.jsx: Handles form state, empty input validation, POST request creation, success alert with "Back to Home" button option, and input clearing.
-   - RequestList.jsx: Dynamic fetching from GET /api/requests/open, renders open request cards, loading state ("Loading help requests..."), and empty state ("No Open Help Requests").
+   - RequestList.jsx: Dynamic fetching from GET /api/requests/open, renders open request cards, loading state ("Loading help requests..."), and friendly empty state ("🎉 All caught up! No open help requests right now.").
    - MatchTutor.jsx: Inline input placeholder "Your Name", button "Accept Request", state handling, PATCH request submission, and auto-refresh callback.
-   - Navbar.jsx: Top navigation header with brand title link and a single clean "← Back to Home" button.
+   - Navbar.jsx: Top navigation header with brand title link and single "← Back to Home" button.
 
 4. UI & STYLING (styles.css):
    - Restricted color palette: White (#ffffff), Light Gray (#f9fafb), Dark Gray (#111827), Blue (#2563eb), Green (#16a34a), Red (#dc2626).
@@ -716,9 +716,16 @@ const RequestList = ({ requests, loading, error, onRefresh }) => {
       {/* Error state */}
       {!loading && error && <div className="alert alert-error">{error}</div>}
 
-      {/* Empty state */}
+      {/* Empty state with friendly feedback message */}
       {!loading && !error && requests.length === 0 && (
-        <div className="empty-state">No Open Help Requests</div>
+        <div className="empty-state">
+          <p style={{ fontWeight: 600, color: "#111827", marginBottom: "4px" }}>
+            🎉 All caught up! No open help requests right now.
+          </p>
+          <p style={{ fontSize: "0.85rem", color: "#6b7280" }}>
+            Check back later to see when new students request assistance.
+          </p>
+        </div>
       )}
 
       {/* List of open request cards */}
@@ -755,15 +762,7 @@ const LandingPage = () => {
     <div>
       <Navbar showBackHome={false} />
 
-      <main className="container">
-        {/* Landing Hero Header */}
-        <div className="landing-hero">
-          <h1>Peer Tutoring Matchmaker</h1>
-          <p className="landing-subtitle">
-            Helping students learn together through peer tutoring.
-          </p>
-        </div>
-
+      <main className="container" style={{ paddingTop: "32px" }}>
         {/* Action Cards Container */}
         <div className="action-cards-grid">
           {/* Card 1: Student Option */}

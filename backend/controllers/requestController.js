@@ -13,6 +13,19 @@ const createRequest = async (req, res) => {
     }
 
 
+    // Check if an open request for the same subject already exists (as per PDF flow)
+    const checkSubjectQuery = `
+      SELECT * FROM help_requests 
+      WHERE LOWER(subject) = LOWER($1) AND status = 'Open';
+    `;
+    const checkSubjectResult = await pool.query(checkSubjectQuery, [subject.trim()]);
+
+    if (checkSubjectResult.rows.length > 0) {
+      return res.status(409).json({
+        message: "An open help request for this subject already exists.",
+      });
+    }
+
     // SQL Query
     const query = `
       INSERT INTO help_requests (student_name, subject, topic)

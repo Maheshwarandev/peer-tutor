@@ -10,15 +10,7 @@ const LandingPage = () => {
     <div>
       <Navbar showBackHome={false} />
 
-      <main className="container">
-        {/* Landing Hero Header */}
-        <div className="landing-hero">
-          <h1>Peer Tutoring Matchmaker</h1>
-          <p className="landing-subtitle">
-            Helping students learn together through peer tutoring.
-          </p>
-        </div>
-
+      <main className="container" style={{ paddingTop: "32px" }}>
         {/* Action Cards Container */}
         <div className="action-cards-grid">
           {/* Card 1: Student Option */}

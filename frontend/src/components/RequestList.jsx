@@ -13,9 +13,16 @@ const RequestList = ({ requests, loading, error, onRefresh }) => {
       {/* Error state */}
       {!loading && error && <div className="alert alert-error">{error}</div>}
 
-      {/* Empty state */}
+      {/* Empty state with friendly feedback message */}
       {!loading && !error && requests.length === 0 && (
-        <div className="empty-state">No Open Help Requests</div>
+        <div className="empty-state">
+          <p style={{ fontWeight: 600, color: "#111827", marginBottom: "4px" }}>
+            🎉 All caught up! No open help requests right now.
+          </p>
+          <p style={{ fontSize: "0.85rem", color: "#6b7280" }}>
+            Check back later to see when new students request assistance.
+          </p>
+        </div>
       )}
 
       {/* List of open request cards */}
