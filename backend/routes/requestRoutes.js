@@ -8,7 +8,7 @@ const {
   matchTutor,
 } = require("../controllers/requestController");
 
-// POST /api/requests
+// Request routes
 router.get("/", getAllRequests);
 router.get("/open", getOpenRequests);
 router.post("/", createRequest);

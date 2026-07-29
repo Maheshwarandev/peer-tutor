@@ -26,20 +26,20 @@ The **Peer Tutoring Matchmaker** application facilitates peer-to-peer academic s
 
 ---
 
-## ✨ Features
+## ✨ Features & Core Business Rules
 
 * **Landing Page (`/`)**: Features two primary action cards:
   * 📚 **I Need Help**: Navigates to the Student Dashboard.
   * 👨‍🏫 **I Want to Help**: Navigates to the Tutor Dashboard.
 * **Student Dashboard (`/student`)**:
   * Form submission with fields for **Student Name**, **Subject**, and **Topic**.
-  * **Duplicate Subject Protection**: Checks if an open request for the same subject already exists and rejects duplicates with a clear `409 Conflict` error.
+  * **Duplicate Student Request Protection**: Enforces Rubric Logic Rule 1 (`LOWER(student_name) = LOWER($1) AND LOWER(subject) = LOWER($2) AND status = 'Open'`). If a student already has an active 'Open' request for that exact same subject, the backend rejects it with `409 Conflict`.
   * Interactive success notification with a direct link back to Home.
 * **Tutor Dashboard (`/tutor`)**:
   * Displays open help requests (`WHERE status = 'Open'`).
   * Inline tutor name input with an **Accept Request** action button.
-  * **Automated Removal**: Once accepted, status updates to `Matched` and the item automatically clears off the open list.
-* **Robust Error Handling**: Handles missing fields, invalid non-numeric IDs (`400`), non-existent records (`404`), and already-matched requests (`409`).
+  * **Automated Removal (Rubric Logic Rule 2)**: Once accepted, status updates to `Matched` in PostgreSQL and immediately disappears from the Open Requests API view (`/api/requests/open`).
+* **Robust Error Handling**: Handles missing fields (`400`), invalid non-numeric IDs (`400`), non-existent records (`404`), and already-matched requests (`409`).
 
 ---
 
@@ -53,7 +53,7 @@ graph TD
     
     B -->|Click 'I Need Help'| C[Student Dashboard /student]
     C --> D[Fill Help Request Form]
-    D --> E{Open request for same subject?}
+    D --> E{Student already has open request for same subject?}
     E -->|Yes| F[Reject Request - 409 Conflict]
     E -->|No| G[POST /api/requests]
     G --> H[Express.js Backend API]
@@ -67,7 +67,7 @@ graph TD
     M --> N[PATCH /api/requests/:id/match]
     N --> H
     H --> O[Status Changed to Matched]
-    O --> P[Removed from Open Requests API View]
+    O --> P[Immediately Removed from Open Requests List]
 ```
 
 ### **Component Connection Flow**
@@ -195,7 +195,7 @@ Base URL: `http://localhost:5000/api`
 | Method | Endpoint | Description | Request Body / Params | Expected Response |
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/` | Server Health Check | None | `200 OK` — Plain text status |
-| `POST` | `/api/requests` | Create a new help request | Body: `{ "student_name": "Alice", "subject": "Math", "topic": "Calculus" }` | `201 Created` — Created request object<br>`409 Conflict` — If open request for subject exists |
+| `POST` | `/api/requests` | Create a new help request | Body: `{ "student_name": "Alice", "subject": "Math", "topic": "Calculus" }` | `201 Created` — Created request object<br>`409 Conflict` — If student has open request for subject |
 | `GET` | `/api/requests` | Fetch all requests | None | `200 OK` — `{ count: N, data: [...] }` |
 | `GET` | `/api/requests/open` | Fetch requests with `status = 'Open'` | None | `200 OK` — `{ count: N, data: [...] }` |
 | `PATCH` | `/api/requests/:id/match` | Accept/match a tutor to a request | Params: `:id`<br>Body: `{ "tutor_name": "Bob" }` | `200 OK` — Updated request object |

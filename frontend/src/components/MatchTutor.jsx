@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { matchTutorRequest } from "../services/api";
 
-// Component for assigning a tutor to a specific request
 const MatchTutor = ({ requestId, onMatched }) => {
   const [tutorName, setTutorName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,7 +12,6 @@ const MatchTutor = ({ requestId, onMatched }) => {
     setError("");
     setSuccess("");
 
-    // Validate empty name input
     if (!tutorName.trim()) {
       setError("Please enter your name.");
       return;
@@ -22,18 +20,15 @@ const MatchTutor = ({ requestId, onMatched }) => {
     try {
       setLoading(true);
 
-      // Call API PATCH /api/requests/:id/match
       await matchTutorRequest(requestId, tutorName.trim());
 
       setSuccess("Tutor assigned successfully.");
       setTutorName("");
 
-      // Refresh requests list
       if (onMatched) {
         onMatched();
       }
     } catch (err) {
-      console.error("Match tutor error:", err);
       const msg = err.response?.data?.message || "Failed to assign tutor.";
       setError(msg);
     } finally {

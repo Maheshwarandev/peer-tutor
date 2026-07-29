@@ -11,7 +11,10 @@ backend/.env
 dist/
 frontend/dist/
 
+# Logs
+logs/
+*.log
+
 # OS / Editor junk
 .DS_Store
 Thumbs.db
-*.log
